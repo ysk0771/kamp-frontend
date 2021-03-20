@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { ActionSequence } from 'selenium-webdriver';
 import { Product } from 'src/app/models/product';
-import { ProductResponseModel } from 'src/app/models/productResponseModel';
-import { ProdcutService } from 'src/app/services/prodcut.service';
+import { ProdcutService } from 'src/app/services/product.service';
 
 @Component({
   selector: 'app-product',
@@ -10,25 +11,42 @@ import { ProdcutService } from 'src/app/services/prodcut.service';
 })
 export class ProductComponent implements OnInit {
   products: Product[] = [];
-  dataLoaded=false;
+  dataLoaded = false;
 
-  productResponseModel: ProductResponseModel = {
-    data: this.products,
-    message: '',
-    success: true,
-  };
+  // productResponseModel: ProductResponseModel = {
+  //   data: this.products,
+  //   message: '',
+  //   success: true,
+  // };
 
-  constructor(private prodcutService:ProdcutService) {}
+  constructor(
+    private productService: ProdcutService,
+    private activatedRoute: ActivatedRoute
+  ) {}
 
   ngOnInit(): void {
-   this.getProducts();
+    this.activatedRoute.params.subscribe(params => {
+      if (params["categoryId"]) {
+        this.getProductsByCategory(params["categoryId"])
+      } else {
+        this.getProducts()
+      }
+    });
   }
 
   getProducts() {
-    this.prodcutService.getProducts().subscribe(response=>{
-      this.products=response.data
-      this.dataLoaded=true;//senkronisayon ayarladık
-    })
-    
+    this.productService.getProducts().subscribe((response) => {
+      this.products = response.data;
+      this.dataLoaded = true; //senkronisayon ayarladık
+    });
+  }
+
+  getProductsByCategory(categoryId: number) {
+    this.productService
+      .getProductsByCategory(categoryId)
+      .subscribe((response) => {
+        this.products = response.data;
+        this.dataLoaded = true; //senkronisayon ayarladık
+      });
   }
 }
